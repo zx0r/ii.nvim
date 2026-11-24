@@ -10,6 +10,14 @@
   <img src="assets/images/nvim.webp" alt="ii Neovim preview" style="border-radius: 8px; max-width: 100%;" />
 </p>
 
+<p align="center">
+  <img src="assets/images/fmt.webp" alt="ii formats preview" style="border-radius: 8px; max-width: 100%;" />
+</p>
+
+<p align="center">
+  <img src="assets/images/tmux.webp" alt="ii tmux preview" style="border-radius: 8px; max-width: 100%;" />
+</p>
+
 Terminal graphical coprocessor integration for Neovim. Renders math formulas, Mermaid diagrams, Vega/Plotly charts, SVGs, and Jupyter Notebooks inline using the Kitty Graphics Protocol (KGP) and Sixel.
 
 Requires [ii](https://github.com/zx0r/ii#installation) binary on `PATH` and a terminal emulator with Kitty Graphics Protocol support (Kitty, Ghostty, WezTerm).
