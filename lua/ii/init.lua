@@ -22,6 +22,22 @@ local placeholder = "\244\142\187\174"
 local max_payload = 64 * 1024 * 1024
 
 -- Little-endian packing helpers (LuaJIT / Lua 5.1 compatible, zero external dependencies)
+local function tty_write(data)
+  if not data or #data == 0 then return end
+  if vim.env.TMUX then
+    data = "\027Ptmux;\027" .. data:gsub("\027", "\027\027") .. "\027\\"
+  end
+  if vim.api.nvim_ui_send and #vim.api.nvim_list_uis() > 0 then
+    vim.api.nvim_ui_send(data)
+  else
+    local out = io.stdout
+    if out then
+      out:write(data)
+      out:flush()
+    end
+  end
+end
+
 local function pack_u16_le(val)
   local v = math.floor(val) % 65536
   return string.char(v % 256, math.floor(v / 256))
@@ -472,8 +488,8 @@ function M.render(bufnr, win, force)
             blocks[#blocks+1]={first=first,last=math.min(last,line_count),lines=virtual_lines(full_buf:sub(pos,pos+size-1),groups,win)}
             pos=pos+size
           end
-          if apc_len > 0 and #vim.api.nvim_list_uis() > 0 then
-            vim.api.nvim_ui_send(full_buf:sub(33, 32 + apc_len))
+          if apc_len > 0 then
+            tty_write(full_buf:sub(33, 32 + apc_len))
           end
           if frames[win] and frames[win].ns and vim.api.nvim_buf_is_valid(frames[win].bufnr) then vim.api.nvim_buf_clear_namespace(frames[win].bufnr,frames[win].ns,0,-1) end
           errors[win] = nil
@@ -532,7 +548,9 @@ function M.toggle(bufnr)
 end
 
 function M.setup(opts)
-  assert(vim.api.nvim_ui_send, "ii: Neovim 0.12+ is required for ordered terminal graphics output")
+  if not vim.api.nvim_ui_send and vim.notify_once then
+    vim.notify_once("ii: Neovim 0.10/0.11 fallback active (using direct stdout; Neovim 0.12+ recommended for ordered TUI pipeline)", vim.log.levels.INFO)
+  end
   opts = opts or {}
   local debounce_ms = opts.debounce_ms or 20
   options.executable = opts.executable or options.executable
